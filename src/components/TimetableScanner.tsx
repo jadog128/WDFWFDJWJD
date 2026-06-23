@@ -26,6 +26,7 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
   const [rawText, setRawText] = useState("");
   const [manualText, setManualText] = useState("");
   const processingRef = useRef(false);
+  const lastScanRef = useRef(0);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -207,6 +208,8 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
     setStep("camera");
     setEditingLesson(null);
     setSaveDone(false);
+    processingRef.current = false;
+    lastScanRef.current = 0;
     setTimeout(() => startCamera(), 100);
   };
 
@@ -313,7 +316,11 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
                   Retake
                 </button>
                 <button
-                  onClick={() => processOCR(image)}
+                  onClick={() => {
+                    if (Date.now() - lastScanRef.current < 5000) return;
+                    lastScanRef.current = Date.now();
+                    processOCR(image);
+                  }}
                   disabled={loading || processingRef.current}
                   className="bg-white text-zinc-900 px-10 py-3 rounded-full text-sm font-medium disabled:opacity-50 shadow-lg"
                 >
