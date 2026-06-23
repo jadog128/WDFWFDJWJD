@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useCreateLesson } from "@/lib/hooks/useLessons";
 import { useSubjects } from "@/lib/hooks/useSubjects";
 import { parseTimetableText, type ParsedLesson } from "@/lib/parseTimetable";
+import { extractTimetableWithVision } from "@/lib/visionOcr";
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -24,28 +25,8 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
   const createLesson = useCreateLesson();
   const { data: subjects } = useSubjects();
 
-  const openCamera = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.capture = "environment" as any;
-    input.onchange = ((e: Event) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) handleFile(file);
-    }) as any;
-    input.click();
-  };
-
-  const openGallery = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = ((e: Event) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) handleFile(file);
-    }) as any;
-    input.click();
-  };
+  const fileRef = useRef<HTMLInputElement>(null);
+  const pickImage = () => fileRef.current?.click();
 
   const handleFile = (file: File) => {
     const reader = new FileReader();
@@ -56,7 +37,6 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
       setError("");
 
       try {
-        const { extractTimetableWithVision } = await import("@/lib/visionOcr");
         const jsonStr = await extractTimetableWithVision(dataUrl);
         let lessons: ParsedLesson[] = [];
         try {
@@ -300,19 +280,21 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
         <h2 className="text-2xl font-medium tracking-tight text-white mb-2">Scan Timetable</h2>
         <p className="text-sm text-zinc-400 text-center mb-8">Take a photo of your timetable and AI will extract all classes automatically</p>
 
-        <button
-          onClick={openCamera}
-          className="w-full bg-white text-zinc-900 py-5 rounded-2xl text-base font-medium shadow-lg active:scale-95 transition flex items-center justify-center gap-3"
-        >
+        <label className="w-full bg-white text-zinc-900 py-5 rounded-2xl text-base font-medium shadow-lg active:scale-95 transition flex items-center justify-center gap-3 cursor-pointer">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          Take Photo
-        </button>
-
-        <button onClick={openGallery} className="mt-3 text-sm text-zinc-400 py-2">
-          Or choose from gallery
-        </button>
+          Choose a Timetable Photo
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files?.[0]) handleFile(e.target.files[0]);
+            }}
+          />
+        </label>
       </div>
 
       <div className="px-6 pb-8">
