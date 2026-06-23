@@ -13,6 +13,7 @@ export function useSubjects() {
   return useQuery<Subject[]>({
     queryKey: ["subjects"],
     queryFn: () => api.get("/api/subjects"),
+    retry: false,
   });
 }
 
@@ -21,6 +22,7 @@ export function useSubject(id: string) {
     queryKey: ["subjects", id],
     queryFn: () => api.get(`/api/subjects/${id}`),
     enabled: !!id,
+    retry: false,
   });
 }
 

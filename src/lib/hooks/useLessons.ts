@@ -18,6 +18,7 @@ export function useLessons(dayOfWeek?: number) {
   return useQuery<Lesson[]>({
     queryKey: ["lessons", dayOfWeek],
     queryFn: () => api.get(`/api/lessons${params}`),
+    retry: false,
   });
 }
 
@@ -26,6 +27,7 @@ export function useLesson(id: string) {
     queryKey: ["lessons", id],
     queryFn: () => api.get(`/api/lessons/${id}`),
     enabled: !!id,
+    retry: false,
   });
 }
 

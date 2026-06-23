@@ -17,9 +17,7 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const s = getStripe();
-  if (!s) {
-    return NextResponse.json({ error: "Payments not configured" }, { status: 501 });
-  }
+  if (!s) return NextResponse.json({ error: "Payments not configured" }, { status: 501 });
 
   const { priceId } = await req.json();
 

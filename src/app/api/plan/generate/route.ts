@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
@@ -9,9 +9,7 @@ export async function POST() {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
+  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -19,18 +17,12 @@ export async function POST() {
 
   const [lessons, tasks] = await Promise.all([
     prisma.lesson.findMany({
-      where: {
-        dayOfWeek,
-        subject: { userId },
-      },
+      where: { dayOfWeek, subject: { userId } },
       include: { subject: { select: { name: true } } },
       orderBy: { startTime: "asc" },
     }),
     prisma.task.findMany({
-      where: {
-        completed: false,
-        subject: { userId },
-      },
+      where: { completed: false, subject: { userId } },
       include: { subject: { select: { name: true } } },
       orderBy: { deadline: "asc" },
     }),
@@ -39,10 +31,10 @@ export async function POST() {
   const prompt = `Generate a detailed daily study plan for today.
 
 Today's lessons (day ${dayOfWeek}):
-${lessons.map((l: { subject: { name: string }; startTime: string; endTime: string; location?: string | null }) => `- ${l.subject.name}: ${l.startTime}-${l.endTime}${l.location ? ` at ${l.location}` : ""}`).join("\n")}
+${lessons.map((l) => `- ${l.subject.name}: ${l.startTime}-${l.endTime}${l.location ? ` at ${l.location}` : ""}`).join("\n")}
 
 Pending tasks (sorted by deadline):
-${tasks.map((t: { subject: { name: string }; title: string; deadline: Date }) => `- ${t.subject.name}: ${t.title} (due: ${t.deadline.toISOString().split("T")[0]})`).join("\n")}
+${tasks.map((t) => `- ${t.subject.name}: ${t.title} (due: ${t.deadline.toISOString().split("T")[0]})`).join("\n")}
 
 Provide a structured plan with time blocks, study sessions, and breaks. Format as JSON with keys: "timeBlocks" (array of {startTime, endTime, activity, type: "lesson"|"study"|"break"}) and "notes" (string).`;
 
@@ -55,10 +47,7 @@ Provide a structured plan with time blocks, study sessions, and breaks. Format a
     body: JSON.stringify({
       model: "deepseek-chat",
       messages: [
-        {
-          role: "system",
-          content: "You are a study planner assistant. Output only valid JSON.",
-        },
+        { role: "system", content: "You are a study planner assistant. Output only valid JSON." },
         { role: "user", content: prompt },
       ],
       response_format: { type: "json_object" },

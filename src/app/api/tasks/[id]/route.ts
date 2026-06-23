@@ -12,7 +12,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     where: { id },
     include: { subject: { select: { userId: true } } },
   });
-
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (existing.subject.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
@@ -33,9 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       ...(deadline !== undefined && { deadline: new Date(deadline) }),
       ...(completed !== undefined && { completed }),
     },
-    include: {
-      subject: { select: { id: true, name: true, color: true } },
-    },
+    include: { subject: { select: { id: true, name: true, color: true } } },
   });
 
   return NextResponse.json(task);
@@ -51,7 +48,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     where: { id },
     include: { subject: { select: { userId: true } } },
   });
-
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (existing.subject.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 

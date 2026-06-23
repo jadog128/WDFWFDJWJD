@@ -17,6 +17,7 @@ export function useTasks(completed?: boolean) {
   return useQuery<Task[]>({
     queryKey: ["tasks", completed],
     queryFn: () => api.get(`/api/tasks${params}`),
+    retry: false,
   });
 }
 
@@ -25,6 +26,7 @@ export function useTask(id: string) {
     queryKey: ["tasks", id],
     queryFn: () => api.get(`/api/tasks/${id}`),
     enabled: !!id,
+    retry: false,
   });
 }
 

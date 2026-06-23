@@ -12,6 +12,7 @@ export function useTodayPlan() {
   return useQuery<DailyPlan>({
     queryKey: ["plan", "today"],
     queryFn: () => api.get("/api/plan/today"),
+    retry: false,
   });
 }
 
