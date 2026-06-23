@@ -22,6 +22,7 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [saveDone, setSaveDone] = useState(false);
+  const [focusPoint, setFocusPoint] = useState<{ x: number; y: number } | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -30,6 +31,29 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
 
   const createLesson = useCreateLesson();
   const { data: subjects } = useSubjects();
+
+  const handleVideoTap = (e: React.MouseEvent<HTMLVideoElement> | React.TouchEvent<HTMLVideoElement>) => {
+    const rect = (e.target as HTMLVideoElement).getBoundingClientRect();
+    let clientX: number, clientY: number;
+    if ("touches" in e) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    const x = ((clientX - rect.left) / rect.width) * 100;
+    const y = ((clientY - rect.top) / rect.height) * 100;
+    setFocusPoint({ x, y });
+    setTimeout(() => setFocusPoint(null), 800);
+    try {
+      const track = (streamRef.current?.getVideoTracks() || [])[0];
+      const caps = track?.getCapabilities?.() as Record<string, any> | undefined;
+      if (caps?.focusMode?.includes?.("manual")) {
+        track!.applyConstraints({ advanced: [{ focusMode: "manual" } as any] });
+      }
+    } catch {}
+  };
 
   const startCamera = useCallback(async () => {
     try {
@@ -56,13 +80,16 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
   const capture = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!video || !canvas || video.videoWidth === 0) {
+      setError("Camera not ready. Tap the camera view first.");
+      return;
+    }
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.drawImage(video, 0, 0);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
     setImage(dataUrl);
     processOCR(dataUrl);
   }, []);
@@ -183,48 +210,74 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
             </div>
           ) : (
             <div className="flex-1 relative overflow-hidden bg-black">
-              <video ref={videoRef} autoPlay playsInline className="absolute inset-0 w-full h-full object-cover" />
-              {/* Viewfinder overlay */}
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                onClick={handleVideoTap}
+                onTouchStart={handleVideoTap}
+                className="absolute inset-0 w-full h-full object-cover cursor-pointer"
+              />
+              {/* Tap to focus indicator */}
+              {focusPoint && (
+                <div
+                  className="absolute w-16 h-16 border-2 border-yellow-400/80 rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 animate-ping"
+                  style={{ left: `${focusPoint.x}%`, top: `${focusPoint.y}%` }}
+                />
+              )}
+              {/* Semi-transparent overlay with clear center area */}
+              <div className="absolute inset-0 bg-black/20" />
+              {/* Viewfinder frame - clear area */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="relative w-4/5 max-w-sm">
+                  {/* Darkened edges */}
+                  <div className="absolute -inset-4 bg-black/40" style={{ clipPath: "inset(0 round 12px)" }} />
+                  {/* Clear view area */}
+                  <div className="relative rounded-xl aspect-[3/4] max-h-[60vh] border-2 border-white/60 shadow-[0_0_0_100vmax_rgba(0,0,0,0.5)] overflow-hidden">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg className="w-16 h-16 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      </svg>
+                    </div>
+                  </div>
                   {/* Corner brackets */}
-                  <div className="absolute -top-2 -left-2 w-8 h-8 border-t-4 border-l-4 border-white/80 rounded-tl" />
-                  <div className="absolute -top-2 -right-2 w-8 h-8 border-t-4 border-r-4 border-white/80 rounded-tr" />
-                  <div className="absolute -bottom-2 -left-2 w-8 h-8 border-b-4 border-l-4 border-white/80 rounded-bl" />
-                  <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-4 border-r-4 border-white/80 rounded-br" />
-                  <div className="border-2 border-dashed border-white/40 rounded-xl aspect-[3/4] max-h-[60vh]" />
+                  <div className="absolute -top-1 -left-1 w-10 h-10 border-t-4 border-l-4 border-white rounded-tl-lg pointer-events-none" />
+                  <div className="absolute -top-1 -right-1 w-10 h-10 border-t-4 border-r-4 border-white rounded-tr-lg pointer-events-none" />
+                  <div className="absolute -bottom-1 -left-1 w-10 h-10 border-b-4 border-l-4 border-white rounded-bl-lg pointer-events-none" />
+                  <div className="absolute -bottom-1 -right-1 w-10 h-10 border-b-4 border-r-4 border-white rounded-br-lg pointer-events-none" />
                 </div>
               </div>
-              <p className="absolute bottom-24 left-0 right-0 text-center text-white/60 text-xs">
-                Line up your timetable in the frame
+              <p className="absolute bottom-28 left-0 right-0 text-center text-white/70 text-xs font-medium tracking-wide">
+                Position timetable in frame
               </p>
             </div>
           )}
-          <div className="bg-black px-6 py-6 flex items-center justify-center gap-6">
+          <div className="bg-black px-6 py-5 flex items-center justify-center gap-6">
             {step === "camera" && (
               <>
                 <button
                   onClick={() => { stopCamera(); onClose(); }}
-                  className="text-white/60 text-sm font-medium"
+                  className="text-white/50 text-sm font-medium w-16"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={capture}
-                  className="w-16 h-16 rounded-full border-4 border-white flex items-center justify-center active:scale-95 transition"
+                  className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center active:scale-95 transition hover:border-zinc-300"
                 >
-                  <div className="w-12 h-12 rounded-full bg-white" />
+                  <div className="w-16 h-16 rounded-full bg-white shadow-lg" />
                 </button>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-white/60 text-sm font-medium flex items-center gap-1"
+                  className="text-white/70 text-sm font-medium flex flex-col items-center gap-0.5 w-16"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  Upload
+                  <span className="text-[10px]">Gallery</span>
                 </button>
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
+                <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileUpload} />
               </>
             )}
             {step === "preview" && image && (
@@ -235,9 +288,9 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
                 <button
                   onClick={() => processOCR(image)}
                   disabled={loading}
-                  className="bg-white text-zinc-900 px-8 py-3 rounded-full text-sm font-medium disabled:opacity-50"
+                  className="bg-white text-zinc-900 px-10 py-3 rounded-full text-sm font-medium disabled:opacity-50 shadow-lg"
                 >
-                  {loading ? "Processing..." : "Scan Again"}
+                  {loading ? "Processing..." : "Scan This Photo"}
                 </button>
               </>
             )}
