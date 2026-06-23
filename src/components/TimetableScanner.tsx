@@ -28,42 +28,42 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const pickImage = () => fileRef.current?.click();
 
-  const handleFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const dataUrl = ev.target?.result as string;
-      setImage(dataUrl);
-      setStep("loading");
-      setError("");
+  const handleFile = async (file: File) => {
+    setImage(URL.createObjectURL(file));
+    setStep("loading");
+    setError("");
 
+    try {
+      const buf = await file.arrayBuffer();
+      const base64 = btoa(new Uint8Array(buf).reduce((d, b) => d + String.fromCharCode(b), ""));
+      const mime = file.type || "image/jpeg";
+      const dataUrl = `data:${mime};base64,${base64}`;
+
+      const jsonStr = await extractTimetableWithVision(dataUrl);
+      let lessons: ParsedLesson[] = [];
       try {
-        const jsonStr = await extractTimetableWithVision(dataUrl);
-        let lessons: ParsedLesson[] = [];
-        try {
-          const raw = JSON.parse(jsonStr);
-          lessons = (Array.isArray(raw) ? raw : []).map((l: any) => ({
-            dayOfWeek: l.dayOfWeek ?? 1,
-            startTime: l.startTime || "09:00",
-            endTime: l.endTime || "10:00",
-            subject: l.subject || "Unknown",
-            location: l.location || "",
-            teacher: l.teacher || "",
-            raw: "",
-          }));
-        } catch {
-          setRawText(jsonStr);
-          setStep("review_text");
-          return;
-        }
-        setDetectedLessons(lessons);
-        setStep(lessons.length > 0 ? "review" : "review_text");
-        if (lessons.length === 0) setRawText(jsonStr);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Vision AI failed");
-        setStep("pick");
+        const raw = JSON.parse(jsonStr);
+        lessons = (Array.isArray(raw) ? raw : []).map((l: any) => ({
+          dayOfWeek: l.dayOfWeek ?? 1,
+          startTime: l.startTime || "09:00",
+          endTime: l.endTime || "10:00",
+          subject: l.subject || "Unknown",
+          location: l.location || "",
+          teacher: l.teacher || "",
+          raw: "",
+        }));
+      } catch {
+        setRawText(jsonStr);
+        setStep("review_text");
+        return;
       }
-    };
-    reader.readAsDataURL(file);
+      setDetectedLessons(lessons);
+      setStep(lessons.length > 0 ? "review" : "review_text");
+      if (lessons.length === 0) setRawText(jsonStr);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Vision AI failed");
+      setStep("pick");
+    }
   };
 
   const startEdit = (i: number) => {
@@ -127,7 +127,7 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
   if (step === "loading") {
     return (
       <div className="absolute inset-0 bg-black z-50 flex flex-col items-center justify-center text-white">
-        {image && <img src={image} className="absolute inset-0 w-full h-full object-contain opacity-30" alt="" />}
+        {image && <img src={image} className="absolute inset-0 w-full h-full object-contain opacity-20" alt="" />}
         <div className="relative">
           <div className="w-10 h-10 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
           <p className="text-sm text-zinc-200">Extracting timetable with AI...</p>
