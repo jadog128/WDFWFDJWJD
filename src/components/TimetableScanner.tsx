@@ -84,33 +84,15 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
     setLoading(true);
     setError("");
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000);
-
     try {
-      const blob = await (await fetch(dataUrl)).blob();
-      const fd = new FormData();
-      fd.append("image", blob, "scan.jpg");
-      fd.append("lang", "eng");
-
-      const res = await fetch("/api/ocr", { method: "POST", body: fd, signal: controller.signal });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "OCR failed" }));
-        throw new Error(err.error || "OCR failed");
-      }
-
-      const result = await res.json();
-      const parsed = parseTimetableText(result.text || "");
+      const { recognizeImage } = await import("@/lib/clientOcr");
+      const text = await recognizeImage(dataUrl);
+      const parsed = parseTimetableText(text);
       setDetectedLessons(parsed);
       setStep(parsed.length > 0 ? "review" : "preview");
     } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") {
-        setError("First scan takes longer (loading OCR engine). Please try again.");
-      } else {
-        setError(err instanceof Error ? err.message : "OCR failed");
-      }
+      setError(err instanceof Error ? err.message : "OCR failed");
     } finally {
-      clearTimeout(timeout);
       setLoading(false);
     }
   };
