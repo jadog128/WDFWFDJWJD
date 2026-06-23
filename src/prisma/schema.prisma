@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id
+  email     String   @unique
+  plan      String   @default("free")
+  createdAt DateTime @default(now())
+  subjects  Subject[]
+  plans     DailyPlan[]
+}
+
+model Subject {
+  id      String   @id @default(cuid())
+  userId  String
+  name    String
+  color   String   @default("#18181b")
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+  tasks   Task[]
+}
+
+model Lesson {
+  id        String  @id @default(cuid())
+  subjectId String
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  location  String?
+  teacher   String?
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  subjectId String
+  title     String
+  deadline  DateTime
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+}
+
+model DailyPlan {
+  id      String   @id @default(cuid())
+  userId  String
+  date    DateTime
+  content Json
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}

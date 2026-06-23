@@ -1,0 +1,1073 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Day Simplified</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&amp;display=swap" rel="stylesheet">
+    <style>
+      body {
+          font-family: 'Inter', sans-serif;
+          -webkit-tap-highlight-color: transparent;
+          background-color: #e2e8f0; /* Darker bg outside mobile view */
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          margin: 0;
+      }
+
+      /* Mobile App Container */
+      #app-container {
+          width: 100%;
+          max-width: 400px;
+          height: 100dvh;
+          max-height: 850px;
+          background-color: #f8fafc; /* slate-50 */
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          display: flex;
+          flex-direction: column;
+      }
+
+      @media (min-width: 450px) {
+          #app-container {
+              height: 90vh;
+              border-radius: 2.5rem;
+              border: 8px solid #0f172a;
+          }
+      }
+
+      /* Hide scrollbar */
+      .no-scrollbar::-webkit-scrollbar {
+          display: none;
+      }
+      .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+      }
+
+      /* Custom Checkbox styles */
+      .task-checkbox.checked .check-icon {
+          opacity: 1;
+      }
+      .task-checkbox.checked {
+          background-color: #18181b; /* zinc-900 */
+          border-color: #18181b;
+      }
+      .task-text.completed {
+          text-decoration: line-through;
+          color: #a1a1aa; /* zinc-400 */
+      }
+
+      /* Timeline styles */
+      .timeline-line::before {
+          content: '';
+          position: absolute;
+          top: 2rem;
+          bottom: -1rem;
+          left: 2.75rem;
+          width: 2px;
+          background-color: #e2e8f0;
+          z-index: 0;
+      }
+      .timeline-item:last-child .timeline-line::before {
+          display: none;
+      }
+    </style>
+    <style>
+      .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+      @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+  </head>
+  <body class="antialiased text-zinc-800">
+    <div id="app-container" class="">
+      <!-- ========================================== -->
+      <!-- ONBOARDING FLOW                            -->
+      <!-- ========================================== -->
+      <div id="onboarding-flow" class="absolute inset-0 bg-slate-50 z-50 flex flex-col transition-transform duration-300">
+        <!-- Step 1: Welcome -->
+        <div id="ob-step-1" class="flex-1 flex flex-col p-6 h-full justify-between">
+          <div class="mt-20">
+            <div class="w-16 h-16 bg-zinc-900 text-white rounded-2xl flex items-center justify-center text-2xl font-medium tracking-tight mb-8">
+              <iconify-icon icon="solar:calendar-bold-duotone" class="text-3xl"></iconify-icon>
+            </div>
+            <h1 class="text-3xl font-medium tracking-tight leading-tight mb-4">
+              The simplest way to not fall behind.
+            </h1>
+            <p class="text-base text-zinc-500 font-normal">
+              Manage your classes, free time, and tasks in one clear daily
+              timeline.
+            </p>
+          </div>
+          <div class="pb-8">
+            <button data-action="ob-next" class="w-full bg-zinc-900 text-white rounded-full py-4 text-sm font-medium transition active:scale-95 flex items-center justify-center gap-2">
+              Get Started
+              <iconify-icon icon="solar:arrow-right-linear" class="text-lg"></iconify-icon>
+            </button>
+            <button data-action="skip-onboarding" class="w-full mt-4 text-zinc-400 text-sm font-normal py-2">
+              Skip
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Subjects -->
+        <div id="ob-step-2" class="flex-1 flex flex-col p-6 h-full justify-between hidden">
+          <div class="mt-12 flex-1 overflow-y-auto no-scrollbar">
+            <h2 class="text-2xl font-medium tracking-tight mb-2">
+              What are you studying?
+            </h2>
+            <p class="text-sm text-zinc-500 mb-6">
+              Add your subjects to quickly organize your tasks and schedule.
+            </p>
+
+            <div class="flex gap-2 mb-6">
+              <input type="text" placeholder="e.g. Mathematics" class="flex-1 bg-white border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-zinc-400">
+              <button class="bg-zinc-100 text-zinc-900 px-4 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5" data-action="add-subject">
+                <iconify-icon icon="solar:add-circle-linear" class="text-lg"></iconify-icon>
+                Add
+              </button>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <span class="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm flex items-center gap-2 border border-blue-100">
+                Maths
+                <iconify-icon icon="solar:close-circle-linear" class="text-blue-400"></iconify-icon>
+              </span>
+              <span class="bg-purple-50 text-purple-700 px-4 py-2 rounded-lg text-sm flex items-center gap-2 border border-purple-100">
+                Physics
+                <iconify-icon icon="solar:close-circle-linear" class="text-purple-400"></iconify-icon>
+              </span>
+              <span class="bg-orange-50 text-orange-700 px-4 py-2 rounded-lg text-sm flex items-center gap-2 border border-orange-100">
+                Literature
+                <iconify-icon icon="solar:close-circle-linear" class="text-orange-400"></iconify-icon>
+              </span>
+            </div>
+          </div>
+          <div class="pb-8 pt-4">
+            <button data-action="ob-finish" class="w-full bg-zinc-900 text-white rounded-full py-4 text-sm font-medium transition active:scale-95 flex items-center justify-center gap-2">
+              Continue
+              <iconify-icon icon="solar:arrow-right-linear" class="text-lg"></iconify-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MAIN APP FRAME                             -->
+      <!-- ========================================== -->
+      <div id="main-app" class="hidden flex-1 flex flex-col relative h-full">
+        <!-- Dynamic Content Area -->
+        <main class="flex-1 overflow-y-auto no-scrollbar pb-24 pt-6 px-5 relative">
+          <!-- HEADER (Shared across some screens) -->
+          <header class="flex justify-between items-center mb-6">
+            <div id="dynamic-header-left">
+              <p class="text-sm text-zinc-500 font-medium uppercase tracking-widest">
+                Today
+              </p>
+              <h2 class="text-2xl font-medium tracking-tight">Wed, 24 Oct</h2>
+            </div>
+            <button data-action="nav-profile" class="w-10 h-10 rounded-full bg-zinc-200 overflow-hidden border border-zinc-300 transition active:scale-95">
+              <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Alex&amp;backgroundColor=transparent" alt="Profile" class="w-full h-full object-cover">
+            </button>
+          </header>
+
+          <!-- === SCREEN: TODAY === -->
+          <div id="screen-today" class="view-screen block">
+            <div class="flex justify-between items-center bg-white rounded-2xl p-4 mb-6 shadow-sm border border-zinc-100">
+              <div class="flex flex-col items-center gap-1 opacity-40">
+                <span class="text-[10px] font-medium text-zinc-500 uppercase">
+                  Mon
+                </span>
+                <span class="text-sm font-medium text-zinc-900">22</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 opacity-40">
+                <span class="text-[10px] font-medium text-zinc-500 uppercase">
+                  Tue
+                </span>
+                <span class="text-sm font-medium text-zinc-900">23</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 bg-zinc-900 text-white px-4 py-2 rounded-xl shadow-md">
+                <span class="text-[10px] font-medium text-zinc-300 uppercase">
+                  Wed
+                </span>
+                <span class="text-sm font-medium text-white">24</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 opacity-40">
+                <span class="text-[10px] font-medium text-zinc-500 uppercase">
+                  Thu
+                </span>
+                <span class="text-sm font-medium text-zinc-900">25</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 opacity-40">
+                <span class="text-[10px] font-medium text-zinc-500 uppercase">
+                  Fri
+                </span>
+                <span class="text-sm font-medium text-zinc-900">26</span>
+              </div>
+            </div>
+            <!-- Next Action Card -->
+            <div class="bg-zinc-900 text-white rounded-[1.5rem] p-5 mb-8 shadow-lg shadow-zinc-900/20">
+              <div class="flex items-center gap-2 text-zinc-400 mb-3">
+                <iconify-icon icon="solar:clock-circle-linear" class="text-lg"></iconify-icon>
+                <span class="text-xs font-medium uppercase tracking-widest">
+                  Next Action
+                </span>
+              </div>
+              <h3 class="text-lg font-medium tracking-tight leading-snug mb-1">
+                You have 1h 30m free right now.
+              </h3>
+              <p class="text-sm text-zinc-300 font-normal mb-5">
+                Perfect time to clear your pending task.
+              </p>
+              <button class="bg-white text-zinc-900 w-full rounded-xl py-3 text-sm font-medium flex justify-between items-center px-5 transition active:bg-zinc-100">
+                <span>Revise Maths</span>
+                <iconify-icon icon="solar:arrow-right-linear" class="text-lg"></iconify-icon>
+              </button>
+            </div>
+            <div class="bg-indigo-50 border border-indigo-100 rounded-[1.5rem] p-5 mb-8 flex justify-between items-center shadow-sm">
+              <div>
+                <h3 class="text-sm font-medium text-indigo-900 mb-1 flex items-center gap-2">
+                  <iconify-icon icon="solar:stopwatch-linear" class="text-lg"></iconify-icon>
+                  Focus Timer
+                </h3>
+                <p class="text-xs text-indigo-700/80 font-normal">
+                  Stay on track with a 25m session
+                </p>
+              </div>
+              <button class="bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md transition active:scale-95">
+                <iconify-icon icon="solar:play-linear" class="text-xl"></iconify-icon>
+              </button>
+            </div>
+
+            <!-- Timeline -->
+            <div class="relative">
+              <!-- Item: Past -->
+              <div class="timeline-item timeline-line flex gap-4 mb-6 relative z-10 opacity-50">
+                <div class="w-14 text-right pt-1">
+                  <span class="text-xs text-zinc-500 font-medium">09:00</span>
+                </div>
+                <div class="relative flex flex-col items-center">
+                  <div class="w-3 h-3 rounded-full bg-zinc-300 border-2 border-white relative z-10 mt-1.5"></div>
+                </div>
+                <div class="flex-1 bg-white border border-zinc-100 rounded-2xl p-4">
+                  <h4 class="text-sm font-medium line-through text-zinc-500">
+                    Physics Lecture
+                  </h4>
+                  <p class="text-xs text-zinc-400 mt-1">Room 302</p>
+                </div>
+              </div>
+
+              <!-- Item: Current -->
+              <div class="timeline-item timeline-line flex gap-4 mb-6 relative z-10">
+                <div class="w-14 text-right pt-1">
+                  <span class="text-xs text-blue-600 font-medium">10:30</span>
+                </div>
+                <div class="relative flex flex-col items-center">
+                  <div class="w-3 h-3 rounded-full bg-blue-500 border-2 border-white relative z-10 mt-1.5 ring-4 ring-blue-100"></div>
+                  <div class="w-3 h-3 rounded-full bg-blue-500 absolute mt-1.5 animate-ping opacity-75"></div>
+                </div>
+                <div class="flex-1 bg-white border border-blue-100 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                  <!-- Progress bar background -->
+                  <div class="absolute bottom-0 left-0 h-1 bg-blue-50 w-full">
+                    <div class="h-full bg-blue-500 w-2/3 rounded-r-full"></div>
+                  </div>
+
+                  <div class="flex justify-between items-start mb-1 relative z-10">
+                    <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-medium uppercase tracking-widest">
+                      Ongoing
+                    </span>
+                    <span class="text-xs text-blue-600 font-medium">
+                      Ends in 24m
+                    </span>
+                  </div>
+                  <h4 class="text-base font-medium tracking-tight text-zinc-900 mt-2">
+                    Mathematics
+                  </h4>
+                  <p class="text-xs text-zinc-500 mt-1 flex items-center gap-1">
+                    <iconify-icon icon="solar:map-point-linear"></iconify-icon>
+                    Main Hall
+                  </p>
+                </div>
+              </div>
+
+              <!-- Item: Free Time -->
+              <div class="timeline-item timeline-line flex gap-4 mb-6 relative z-10">
+                <div class="w-14 text-right pt-1">
+                  <span class="text-xs text-zinc-500 font-medium">12:00</span>
+                </div>
+                <div class="relative flex flex-col items-center">
+                  <div class="w-3 h-3 rounded-full bg-white border-2 border-zinc-300 relative z-10 mt-1.5"></div>
+                </div>
+                <div class="flex-1 bg-transparent border-2 border-dashed border-zinc-200 rounded-2xl p-4 flex items-center justify-between">
+                  <div>
+                    <h4 class="text-sm font-medium text-zinc-600">
+                      Free Block
+                    </h4>
+                    <p class="text-xs text-zinc-400 mt-1">1h 30m</p>
+                  </div>
+                  <button data-action="open-add-task" class="text-xs bg-zinc-100 text-zinc-600 px-3 py-1.5 rounded-lg font-medium">
+                    Add Task
+                  </button>
+                </div>
+              </div>
+
+              <!-- Item: Future -->
+              <div class="timeline-item timeline-line flex gap-4 relative z-10">
+                <div class="w-14 text-right pt-1">
+                  <span class="text-xs text-zinc-500 font-medium">13:30</span>
+                </div>
+                <div class="relative flex flex-col items-center">
+                  <div class="w-3 h-3 rounded-full bg-white border-2 border-zinc-300 relative z-10 mt-1.5"></div>
+                </div>
+                <div class="flex-1 bg-white border border-zinc-100 rounded-2xl p-4 shadow-sm">
+                  <h4 class="text-sm font-medium text-zinc-900">
+                    Literature Seminar
+                  </h4>
+                  <p class="text-xs text-zinc-500 mt-1">Library Study Room</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- === SCREEN: TASKS === -->
+          <div id="screen-tasks" class="view-screen hidden">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-medium tracking-tight">Your Tasks</h2>
+              <button data-action="open-add-task" class="w-8 h-8 rounded-full bg-zinc-900 text-white flex items-center justify-center transition active:scale-95">
+                <iconify-icon icon="solar:add-linear" class="text-lg"></iconify-icon>
+              </button>
+            </div>
+            <div class="mb-6">
+              <div class="relative mb-4">
+                <iconify-icon icon="solar:magnifer-linear" class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 text-lg"></iconify-icon>
+                <input type="text" placeholder="Search tasks..." class="w-full bg-zinc-50 border border-zinc-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-zinc-400">
+              </div>
+              <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                <button class="bg-zinc-900 text-white px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap">
+                  All Tasks
+                </button>
+                <button class="bg-zinc-100 text-zinc-600 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition active:bg-zinc-200">
+                  Today
+                </button>
+                <button class="bg-zinc-100 text-zinc-600 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition active:bg-zinc-200">
+                  Upcoming
+                </button>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <!-- Task 1 -->
+              <div class="bg-white rounded-2xl p-4 flex items-start gap-4 border border-zinc-100 shadow-sm" data-action="toggle-task">
+                <div class="task-checkbox w-6 h-6 rounded-full border-2 border-zinc-300 flex items-center justify-center mt-0.5 transition-colors duration-200">
+                  <iconify-icon icon="solar:check-read-linear" class="check-icon text-white text-sm opacity-0 transition-opacity duration-200"></iconify-icon>
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-medium">
+                      Maths
+                    </span>
+                    <span class="text-xs text-red-500 font-medium flex items-center gap-1">
+                      <iconify-icon icon="solar:danger-circle-linear"></iconify-icon>
+                      Tomorrow
+                    </span>
+                  </div>
+                  <h4 class="task-text text-sm font-medium text-zinc-900 transition-all duration-200">
+                    Complete worksheet chapters 4-5
+                  </h4>
+                </div>
+              </div>
+
+              <!-- Task 2 -->
+              <div class="bg-white rounded-2xl p-4 flex items-start gap-4 border border-zinc-100 shadow-sm" data-action="toggle-task">
+                <div class="task-checkbox w-6 h-6 rounded-full border-2 border-zinc-300 flex items-center justify-center mt-0.5 transition-colors duration-200">
+                  <iconify-icon icon="solar:check-read-linear" class="check-icon text-white text-sm opacity-0 transition-opacity duration-200"></iconify-icon>
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[10px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded font-medium">
+                      Physics
+                    </span>
+                    <span class="text-xs text-zinc-400 font-normal">
+                      Friday
+                    </span>
+                  </div>
+                  <h4 class="task-text text-sm font-medium text-zinc-900 transition-all duration-200">
+                    Read lab preparation materials
+                  </h4>
+                </div>
+              </div>
+
+              <!-- Task 3 (Completed) -->
+              <div class="bg-white rounded-2xl p-4 flex items-start gap-4 border border-zinc-100 shadow-sm opacity-70" data-action="toggle-task">
+                <div class="task-checkbox checked w-6 h-6 rounded-full border-2 border-zinc-900 bg-zinc-900 flex items-center justify-center mt-0.5 transition-colors duration-200">
+                  <iconify-icon icon="solar:check-read-linear" class="check-icon text-white text-sm opacity-100 transition-opacity duration-200"></iconify-icon>
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded font-medium">
+                      General
+                    </span>
+                  </div>
+                  <h4 class="task-text completed text-sm font-medium text-zinc-400 transition-all duration-200">
+                    Buy new notebooks
+                  </h4>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- === SCREEN: TIMETABLE === -->
+          <div id="screen-timetable" class="view-screen hidden">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-medium tracking-tight">Timetable</h2>
+              <button class="text-xs font-medium text-zinc-600 flex items-center gap-1 bg-zinc-100 px-3 py-1.5 rounded-lg transition active:bg-zinc-200">
+                <iconify-icon icon="solar:export-linear" class="text-sm"></iconify-icon>
+                Sync Calendar
+              </button>
+            </div>
+
+            <!-- Week Selector -->
+            <div class="flex justify-between bg-white rounded-2xl p-2 mb-6 border border-zinc-100 shadow-sm">
+              <button class="w-10 h-10 rounded-xl text-sm font-normal text-zinc-500">
+                M
+              </button>
+              <button class="w-10 h-10 rounded-xl text-sm font-normal text-zinc-500">
+                T
+              </button>
+              <button class="w-10 h-10 rounded-xl bg-zinc-900 text-white text-sm font-medium shadow-sm">
+                W
+              </button>
+              <button class="w-10 h-10 rounded-xl text-sm font-normal text-zinc-500">
+                T
+              </button>
+              <button class="w-10 h-10 rounded-xl text-sm font-normal text-zinc-500">
+                F
+              </button>
+            </div>
+
+            <!-- List View of Timetable (Better for mobile than grid) -->
+            <div class="space-y-3">
+              <button data-action="edit-lesson" class="w-full text-left bg-white border border-zinc-100 rounded-2xl p-4 flex gap-4 items-center shadow-sm transition active:bg-zinc-50">
+                <div class="text-center w-12 border-r border-zinc-100 pr-4">
+                  <p class="text-sm font-medium text-zinc-900">09:00</p>
+                  <p class="text-[10px] text-zinc-400 mt-1">1.5h</p>
+                </div>
+                <div class="flex-1">
+                  <h4 class="text-sm font-medium text-zinc-900">Physics</h4>
+                  <p class="text-xs text-zinc-500 mt-0.5">Room 302</p>
+                </div>
+                <iconify-icon icon="solar:pen-linear" class="text-zinc-400"></iconify-icon>
+              </button>
+
+              <button data-action="edit-lesson" class="w-full text-left bg-white border border-zinc-100 rounded-2xl p-4 flex gap-4 items-center shadow-sm transition active:bg-zinc-50">
+                <div class="text-center w-12 border-r border-zinc-100 pr-4">
+                  <p class="text-sm font-medium text-zinc-900">10:30</p>
+                  <p class="text-[10px] text-zinc-400 mt-1">1.5h</p>
+                </div>
+                <div class="flex-1">
+                  <h4 class="text-sm font-medium text-zinc-900">Mathematics</h4>
+                  <p class="text-xs text-zinc-500 mt-0.5">Main Hall</p>
+                </div>
+                <iconify-icon icon="solar:pen-linear" class="text-zinc-400"></iconify-icon>
+              </button>
+
+              <button data-action="edit-lesson" class="w-full text-center bg-transparent border-2 border-dashed border-zinc-200 rounded-2xl py-4 flex items-center justify-center gap-2 text-sm font-medium text-zinc-500 transition active:bg-zinc-50">
+                <iconify-icon icon="solar:add-circle-linear" class="text-lg"></iconify-icon>
+                Add Class
+              </button>
+            </div>
+          </div>
+
+          <!-- === SCREEN: INSIGHTS === -->
+          <div id="screen-insights" class="view-screen hidden">
+            <h2 class="text-2xl font-medium tracking-tight mb-6">
+              Daily Insights
+            </h2>
+
+            <!-- Status -->
+            <div class="bg-green-50 border border-green-100 rounded-[1.5rem] p-5 mb-6">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-8 h-8 rounded-full bg-green-200 text-green-700 flex items-center justify-center">
+                  <iconify-icon icon="solar:emoji-funny-circle-linear" class="text-lg"></iconify-icon>
+                </div>
+                <h3 class="text-base font-medium text-green-800">
+                  You're on track
+                </h3>
+              </div>
+              <p class="text-sm text-green-700/80 font-normal">
+                You've completed all urgent tasks for today. Keep it up!
+              </p>
+            </div>
+            <div class="bg-white border border-zinc-100 rounded-[1.5rem] p-5 mb-6 shadow-sm">
+              <div class="flex justify-between items-end mb-3">
+                <div>
+                  <h3 class="text-sm font-medium text-zinc-900">Weekly Goal</h3>
+                  <p class="text-xs text-zinc-500 mt-0.5">
+                    20 hours study time
+                  </p>
+                </div>
+                <span class="text-sm font-medium text-zinc-900">
+                  12h
+                  <span class="text-zinc-400 font-normal">/ 20h</span>
+                </span>
+              </div>
+              <div class="h-2 bg-zinc-100 w-full rounded-full overflow-hidden">
+                <div class="h-full bg-zinc-900 w-[60%] rounded-full"></div>
+              </div>
+            </div>
+
+            <!-- AI Plan -->
+            <div class="bg-white rounded-[1.5rem] p-5 border border-zinc-100 shadow-sm mb-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-zinc-900 flex items-center gap-2">
+                  <iconify-icon icon="solar:magic-stick-3-linear" class="text-purple-500"></iconify-icon>
+                  Suggested Plan
+                </h3>
+                <button data-action="open-paywall" class="text-[10px] bg-purple-50 text-purple-700 px-2 py-1 rounded font-medium tracking-widest uppercase border border-purple-100">
+                  Pro Feature
+                </button>
+              </div>
+              <p class="text-sm text-zinc-600 font-normal mb-4 leading-relaxed">
+                Based on your upcoming Physics lab on Friday, we suggest
+                studying for
+                <strong class="text-zinc-900 font-medium">
+                  1 hour tonight
+                </strong>
+                .
+              </p>
+              <div class="bg-zinc-50 rounded-xl p-3 border border-zinc-100 flex justify-between items-center blur-[2px] opacity-70 select-none">
+                <div>
+                  <p class="text-xs font-medium text-zinc-900">
+                    Suggested Session
+                  </p>
+                  <p class="text-[10px] text-zinc-500 mt-0.5">
+                    20:00 - 21:00 • Physics
+                  </p>
+                </div>
+                <button class="bg-zinc-900 text-white text-xs px-3 py-1.5 rounded-lg" data-action="edit-lesson">
+                  Add to schedule
+                </button>
+              </div>
+              <button data-action="open-paywall" class="w-full mt-4 text-xs font-medium text-zinc-500 text-center py-2">
+                Unlock AI Insights
+              </button>
+            </div>
+
+            <!-- Simple Chart -->
+            <div class="bg-white rounded-[1.5rem] p-5 border border-zinc-100 shadow-sm">
+              <h3 class="text-sm font-medium text-zinc-900 mb-4">
+                Study Hours This Week
+              </h3>
+              <div class="flex items-end justify-between h-24 gap-2 pt-4">
+                <div class="w-full bg-zinc-100 rounded-t-sm h-[40%] relative">
+                  <span class="absolute -bottom-5 text-[10px] text-zinc-400 w-full text-center">
+                    M
+                  </span>
+                </div>
+                <div class="w-full bg-zinc-100 rounded-t-sm h-[60%] relative">
+                  <span class="absolute -bottom-5 text-[10px] text-zinc-400 w-full text-center">
+                    T
+                  </span>
+                </div>
+                <div class="w-full bg-zinc-900 rounded-t-sm h-[80%] relative">
+                  <span class="absolute -bottom-5 text-[10px] text-zinc-900 font-medium w-full text-center">
+                    W
+                  </span>
+                </div>
+                <div class="w-full bg-zinc-100 rounded-t-sm h-[20%] relative">
+                  <span class="absolute -bottom-5 text-[10px] text-zinc-400 w-full text-center">
+                    T
+                  </span>
+                </div>
+                <div class="w-full bg-zinc-100 rounded-t-sm h-0 relative">
+                  <span class="absolute -bottom-5 text-[10px] text-zinc-400 w-full text-center">
+                    F
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- === SCREEN: PROFILE / SETTINGS === -->
+          <div id="screen-profile" class="view-screen hidden">
+            <div class="flex items-center gap-4 mb-8 pt-2">
+              <div class="w-16 h-16 rounded-full bg-zinc-200 overflow-hidden border-2 border-white shadow-sm">
+                <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Alex&amp;backgroundColor=transparent" alt="Profile" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <h2 class="text-xl font-medium tracking-tight">Alex Student</h2>
+                <p class="text-sm text-zinc-500 font-normal">Free Plan</p>
+              </div>
+            </div>
+
+            <!-- Upgrade Banner -->
+            <button data-action="open-paywall" class="w-full bg-zinc-900 text-white rounded-[1.5rem] p-5 text-left mb-8 shadow-lg shadow-zinc-900/10 relative overflow-hidden transition active:scale-95">
+              <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-purple-500/20 to-transparent rounded-bl-full"></div>
+              <h3 class="text-base font-medium mb-1">Upgrade to Pro</h3>
+              <p class="text-sm text-zinc-400 font-normal mb-4">
+                Get AI study plans and unlimited tasks.
+              </p>
+              <span class="text-xs bg-white/10 px-3 py-1.5 rounded-lg font-medium inline-flex items-center gap-1">
+                View Plans
+                <iconify-icon icon="solar:arrow-right-linear"></iconify-icon>
+              </span>
+            </button>
+
+            <div class="space-y-6">
+              <div>
+                <h3 class="text-xs font-medium uppercase tracking-widest text-zinc-500 mb-3 ml-2">
+                  Preferences
+                </h3>
+                <div class="bg-white rounded-2xl border border-zinc-100 overflow-hidden shadow-sm">
+                  <div class="flex justify-between items-center p-4 border-b border-zinc-50">
+                    <span class="text-sm font-medium text-zinc-900 flex items-center gap-3">
+                      <iconify-icon icon="solar:bell-linear" class="text-zinc-400 text-lg"></iconify-icon>
+                      Notifications
+                    </span>
+                    <!-- Custom Toggle -->
+                    <div class="w-10 h-6 bg-zinc-900 rounded-full relative cursor-pointer" data-action="toggle-switch">
+                      <div class="w-4 h-4 bg-white rounded-full absolute top-1 right-1 transition-all"></div>
+                    </div>
+                  </div>
+                  <div class="flex justify-between items-center p-4">
+                    <span class="text-sm font-medium text-zinc-900 flex items-center gap-3">
+                      <iconify-icon icon="solar:moon-linear" class="text-zinc-400 text-lg"></iconify-icon>
+                      Dark Mode
+                    </span>
+                    <!-- Custom Toggle Off -->
+                    <div class="w-10 h-6 bg-zinc-200 rounded-full relative cursor-pointer" data-action="toggle-switch">
+                      <div class="w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition-all shadow-sm"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 class="text-xs font-medium uppercase tracking-widest text-zinc-500 mb-3 ml-2">
+                  Account
+                </h3>
+                <div class="bg-white rounded-2xl border border-zinc-100 overflow-hidden shadow-sm">
+                  <button data-action="open-modal" data-target="modal-edit-profile" class="w-full flex justify-between items-center p-4 border-b border-zinc-50 text-left transition active:bg-zinc-50">
+                    <span class="text-sm font-medium text-zinc-900 flex items-center gap-3">
+                      <iconify-icon icon="solar:user-circle-linear" class="text-zinc-400 text-lg"></iconify-icon>
+                      Edit Profile
+                    </span>
+                    <iconify-icon icon="solar:alt-arrow-right-linear" class="text-zinc-400"></iconify-icon>
+                  </button>
+                  <button data-action="export-data" class="w-full flex justify-between items-center p-4 border-b border-zinc-50 text-left transition active:bg-zinc-50">
+                    <span class="text-sm font-medium text-zinc-900 flex items-center gap-3">
+                      <iconify-icon icon="solar:document-text-linear" class="text-zinc-400 text-lg"></iconify-icon>
+                      Export Data
+                    </span>
+                    <iconify-icon icon="solar:alt-arrow-right-linear" class="text-zinc-400"></iconify-icon>
+                  </button>
+                  <button data-action="logout" class="w-full flex justify-between items-center p-4 text-left transition active:bg-zinc-50">
+                    <span class="text-sm font-medium text-red-500 flex items-center gap-3">
+                      <iconify-icon icon="solar:logout-linear" class="text-red-400 text-lg"></iconify-icon>
+                      Log Out
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <!-- BOTTOM NAVIGATION BAR -->
+        <button data-action="open-add-task" class="absolute bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-zinc-900/15 via-white/20 to-zinc-900/5 backdrop-blur-2xl border border-white/30 text-zinc-900 rounded-full flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_32px_rgba(15,23,42,0.18)] transition active:scale-95 z-40">
+          <iconify-icon icon="solar:add-linear" class="text-2xl"></iconify-icon>
+        </button>
+        <nav id="bottom-nav" class="absolute bottom-0 w-full bg-white/80 backdrop-blur-md border-t border-zinc-100 pb-safe pt-2 px-6 flex justify-between items-center z-40 h-20">
+          <button data-nav="screen-today" class="nav-btn flex flex-col items-center gap-1 text-zinc-900 w-16">
+            <iconify-icon icon="solar:calendar-date-bold" class="text-2xl transition-transform active:scale-90"></iconify-icon>
+            <span class="text-[10px] font-medium tracking-wide">Today</span>
+          </button>
+          <button data-nav="screen-tasks" class="nav-btn flex flex-col items-center gap-1 text-zinc-400 w-16 transition-colors hover:text-zinc-600">
+            <iconify-icon icon="solar:checklist-minimalistic-linear" class="text-2xl transition-transform active:scale-90"></iconify-icon>
+            <span class="text-[10px] font-medium tracking-wide">Tasks</span>
+          </button>
+          <button data-nav="screen-timetable" class="nav-btn flex flex-col items-center gap-1 text-zinc-400 w-16 transition-colors hover:text-zinc-600">
+            <iconify-icon icon="solar:widget-3-linear" class="text-2xl transition-transform active:scale-90"></iconify-icon>
+            <span class="text-[10px] font-medium tracking-wide">Timetable</span>
+          </button>
+          <button data-nav="screen-insights" class="nav-btn flex flex-col items-center gap-1 text-zinc-400 w-16 transition-colors hover:text-zinc-600">
+            <iconify-icon icon="solar:chart-square-linear" class="text-2xl transition-transform active:scale-90"></iconify-icon>
+            <span class="text-[10px] font-medium tracking-wide">Insights</span>
+          </button>
+        </nav>
+
+        <!-- Safe area spacer for modern phones -->
+        <div class="h-safe bg-white absolute bottom-0 w-full"></div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MODALS (Absolute Overlays)                 -->
+      <!-- ========================================== -->
+
+      <!-- Add Task Modal -->
+      <div id="modal-add-task" class="absolute inset-0 bg-zinc-900/40 z-50 hidden opacity-0 transition-opacity duration-300 flex flex-col justify-end">
+        <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300" id="modal-add-task-content">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-medium tracking-tight">New Task</h2>
+            <button data-action="close-modal" data-target="modal-add-task" class="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-500">
+              <iconify-icon icon="solar:close-circle-linear" class="text-xl"></iconify-icon>
+            </button>
+          </div>
+
+          <input type="text" placeholder="What needs to be done?" class="w-full text-lg border-b border-zinc-200 pb-3 mb-6 focus:outline-none focus:border-zinc-900 bg-transparent placeholder-zinc-400">
+
+          <div class="flex gap-3 mb-6">
+            <button class="bg-zinc-100 px-4 py-2 rounded-xl text-sm font-medium text-zinc-600 flex items-center gap-2">
+              <iconify-icon icon="solar:tag-linear"></iconify-icon>
+              Subject
+            </button>
+            <button class="bg-zinc-100 px-4 py-2 rounded-xl text-sm font-medium text-zinc-600 flex items-center gap-2">
+              <iconify-icon icon="solar:calendar-linear"></iconify-icon>
+              Today
+            </button>
+          </div>
+
+          <button data-action="close-modal" data-target="modal-add-task" class="w-full bg-zinc-900 text-white py-4 rounded-xl text-sm font-medium transition active:scale-95">
+            Save Task
+          </button>
+        </div>
+      </div>
+
+      <!-- Paywall Modal -->
+      <div id="modal-paywall" class="absolute inset-0 bg-white z-50 hidden opacity-0 transition-opacity duration-300 flex flex-col">
+        <!-- Header Image Area -->
+        <div class="h-48 bg-zinc-900 relative flex items-center justify-center overflow-hidden">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-purple-500/30 via-transparent to-transparent"></div>
+          <div class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/20">
+            <iconify-icon icon="solar:star-fall-bold-duotone" class="text-4xl"></iconify-icon>
+          </div>
+          <button data-action="close-modal" data-target="modal-paywall" class="absolute top-6 right-6 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white backdrop-blur-md">
+            <iconify-icon icon="solar:close-circle-linear" class="text-xl"></iconify-icon>
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 p-6 flex flex-col justify-between overflow-y-auto no-scrollbar">
+          <div>
+            <h2 class="text-2xl font-medium tracking-tight mb-2 text-center">
+              Know exactly what to study every day.
+            </h2>
+            <p class="text-sm text-zinc-500 text-center mb-8">
+              Unlock AI insights, unlimited schedule slots, and advanced task
+              tracking.
+            </p>
+
+            <div class="space-y-4 mb-8">
+              <div class="flex items-start gap-3">
+                <iconify-icon icon="solar:check-circle-bold" class="text-zinc-900 text-xl mt-0.5"></iconify-icon>
+                <div>
+                  <h4 class="text-sm font-medium text-zinc-900">
+                    AI Daily Plan
+                  </h4>
+                  <p class="text-xs text-zinc-500">
+                    Smart suggestions based on your deadlines.
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <iconify-icon icon="solar:check-circle-bold" class="text-zinc-900 text-xl mt-0.5"></iconify-icon>
+                <div>
+                  <h4 class="text-sm font-medium text-zinc-900">
+                    Unlimited Classes
+                  </h4>
+                  <p class="text-xs text-zinc-500">
+                    Add your entire semester schedule.
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <iconify-icon icon="solar:check-circle-bold" class="text-zinc-900 text-xl mt-0.5"></iconify-icon>
+                <div>
+                  <h4 class="text-sm font-medium text-zinc-900">
+                    Grade Tracking
+                  </h4>
+                  <p class="text-xs text-zinc-500">
+                    Keep an eye on your academic performance.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing -->
+          <div>
+            <div class="flex gap-3 mb-6">
+              <button class="flex-1 border-2 border-zinc-900 rounded-2xl p-4 text-center relative">
+                <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-zinc-900 text-white text-[10px] px-2 py-0.5 rounded-full font-medium tracking-widest uppercase">
+                  Popular
+                </span>
+                <h4 class="text-sm font-medium text-zinc-900 mb-1">Yearly</h4>
+                <p class="text-lg font-medium tracking-tight">
+                  $2.99
+                  <span class="text-xs text-zinc-500 font-normal">/mo</span>
+                </p>
+              </button>
+              <button class="flex-1 border border-zinc-200 rounded-2xl p-4 text-center transition opacity-60 hover:opacity-100">
+                <h4 class="text-sm font-medium text-zinc-600 mb-1">Monthly</h4>
+                <p class="text-lg font-medium tracking-tight">
+                  $4.99
+                  <span class="text-xs text-zinc-500 font-normal">/mo</span>
+                </p>
+              </button>
+            </div>
+
+            <button data-action="close-modal" data-target="modal-paywall" class="w-full bg-zinc-900 text-white py-4 rounded-full text-sm font-medium transition active:scale-95 shadow-lg shadow-zinc-900/20">
+              Subscribe Now
+            </button>
+            <p class="text-[10px] text-zinc-400 text-center mt-4">
+              Cancel anytime. Terms &amp; Conditions apply.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div id="modal-edit-profile" class="absolute inset-0 bg-zinc-900/40 z-50 hidden opacity-0 transition-opacity duration-300 flex flex-col justify-end">
+        <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-medium tracking-tight">Edit Profile</h2>
+            <button data-action="close-modal" data-target="modal-edit-profile" class="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-500">
+              <iconify-icon icon="solar:close-circle-linear" class="text-xl"></iconify-icon>
+            </button>
+          </div>
+          <div class="space-y-4 mb-6">
+            <div>
+              <label class="text-xs text-zinc-500 mb-1 block">Name</label>
+              <input type="text" value="Alex Student" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-zinc-400">
+            </div>
+            <div>
+              <label class="text-xs text-zinc-500 mb-1 block">Email</label>
+              <input type="email" value="alex@example.com" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-zinc-400">
+            </div>
+          </div>
+          <button data-action="close-modal" data-target="modal-edit-profile" class="w-full bg-zinc-900 text-white py-4 rounded-xl text-sm font-medium transition active:scale-95">
+            Save Changes
+          </button>
+        </div>
+      </div>
+      <div id="modal-edit-lesson" class="absolute inset-0 bg-zinc-900/40 z-50 hidden opacity-0 transition-opacity duration-300 flex flex-col justify-end">
+        <div class="bg-white rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-medium tracking-tight">Class Details</h2>
+            <button data-action="close-modal" data-target="modal-edit-lesson" class="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-500">
+              <iconify-icon icon="solar:close-circle-linear" class="text-xl"></iconify-icon>
+            </button>
+          </div>
+          <div class="space-y-4 mb-6">
+            <div>
+              <label class="text-xs text-zinc-500 mb-1 block">Subject</label>
+              <input type="text" value="Physics" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-zinc-400">
+            </div>
+            <div class="flex gap-4">
+              <div class="flex-1">
+                <label class="text-xs text-zinc-500 mb-1 block">
+                  Start Time
+                </label>
+                <input type="time" value="09:00" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-zinc-400">
+              </div>
+              <div class="flex-1">
+                <label class="text-xs text-zinc-500 mb-1 block">End Time</label>
+                <input type="time" value="10:30" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-zinc-400">
+              </div>
+            </div>
+          </div>
+          <button data-action="close-modal" data-target="modal-edit-lesson" class="w-full bg-zinc-900 text-white py-4 rounded-xl text-sm font-medium transition active:scale-95">
+            Save Class
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+          const mainApp = document.getElementById('main-app');
+          const onboardingFlow = document.getElementById('onboarding-flow');
+          const obStep1 = document.getElementById('ob-step-1');
+          const obStep2 = document.getElementById('ob-step-2');
+          const navButtons = document.querySelectorAll('.nav-btn');
+          const viewScreens = document.querySelectorAll('.view-screen');
+          const dynamicHeaderLeft = document.getElementById('dynamic-header-left');
+
+          const headerTitles = {
+              'screen-today': { sub: 'Today', title: 'Wed, 24 Oct' },
+              'screen-tasks': { sub: 'Overview', title: 'Tasks' },
+              'screen-timetable': { sub: 'Schedule', title: 'Timetable' },
+              'screen-insights': { sub: 'Analytics', title: 'Insights' },
+              'screen-profile': { sub: 'Account', title: 'Profile' }
+          };
+
+          function switchScreen(targetId) {
+              viewScreens.forEach(screen => {
+                  screen.classList.add('hidden');
+                  screen.classList.remove('block', 'animate-fade-in');
+              });
+              const targetScreen = document.getElementById(targetId);
+              if(targetScreen) {
+                  targetScreen.classList.remove('hidden');
+                  void targetScreen.offsetWidth;
+                  targetScreen.classList.add('block', 'animate-fade-in');
+              }
+              if(headerTitles[targetId]) {
+                  dynamicHeaderLeft.parentElement.classList.remove('hidden');
+                  dynamicHeaderLeft.innerHTML = `
+                      <p class="text-sm text-zinc-500 font-medium uppercase tracking-widest">${headerTitles[targetId].sub}</p>
+                      <h2 class="text-2xl font-medium tracking-tight">${headerTitles[targetId].title}</h2>
+                  `;
+              }
+              if (targetId === 'screen-profile') {
+                  dynamicHeaderLeft.parentElement.classList.add('hidden');
+              } else if (targetId === 'screen-timetable' || targetId === 'screen-insights' || targetId === 'screen-tasks') {
+                  dynamicHeaderLeft.parentElement.classList.add('hidden');
+              } else {
+                   dynamicHeaderLeft.parentElement.classList.remove('hidden');
+              }
+              navButtons.forEach(btn => {
+                  const icon = btn.querySelector('iconify-icon');
+                  btn.classList.remove('text-zinc-900');
+                  btn.classList.add('text-zinc-400');
+                  const currentIcon = icon.getAttribute('icon');
+                  if(currentIcon.includes('-bold')) {
+                      icon.setAttribute('icon', currentIcon.replace('-bold', '-linear'));
+                  }
+                  if(btn.dataset.nav === targetId) {
+                      btn.classList.remove('text-zinc-400');
+                      btn.classList.add('text-zinc-900');
+                      const activeIcon = icon.getAttribute('icon');
+                      if(activeIcon.includes('-linear')) {
+                          icon.setAttribute('icon', activeIcon.replace('-linear', '-bold'));
+                      } else if (!activeIcon.includes('-bold')) {
+                           icon.setAttribute('icon', activeIcon + '-bold');
+                      }
+                  }
+              });
+          }
+
+          function openModal(modalId) {
+              const modal = document.getElementById(modalId);
+              if(!modal) return;
+              modal.classList.remove('hidden');
+              void modal.offsetWidth;
+              modal.classList.remove('opacity-0');
+              const content = modal.querySelector('div.transform');
+              if(content) {
+                  content.classList.remove('translate-y-full');
+              }
+          }
+
+          function closeModal(modalId) {
+              const modal = document.getElementById(modalId);
+              if(!modal) return;
+              const content = modal.querySelector('div.transform');
+              if(content) {
+                  content.classList.add('translate-y-full');
+              }
+              modal.classList.add('opacity-0');
+              setTimeout(() => {
+                  modal.classList.add('hidden');
+              }, 300);
+          }
+
+          document.addEventListener('click', (e) => {
+              const navBtn = e.target.closest('.nav-btn');
+              if (navBtn) {
+                  switchScreen(navBtn.dataset.nav);
+                  return;
+              }
+              const actionElem = e.target.closest('[data-action]');
+              if (!actionElem) return;
+              const action = actionElem.dataset.action;
+              switch(action) {
+                  case 'ob-next':
+                      obStep1.classList.add('hidden');
+                      obStep2.classList.remove('hidden');
+                      void obStep2.offsetWidth;
+                      obStep2.classList.add('animate-fade-in');
+                      break;
+                  case 'ob-finish':
+                  case 'skip-onboarding':
+                      onboardingFlow.classList.add('-translate-y-full');
+                      setTimeout(() => {
+                          onboardingFlow.classList.add('hidden');
+                          mainApp.classList.remove('hidden');
+                          switchScreen('screen-today');
+                      }, 300);
+                      break;
+                  case 'add-subject':
+                      const input = actionElem.previousElementSibling;
+                      if(input && input.value.trim() !== '') {
+                          const container = actionElem.closest('div').nextElementSibling;
+                          const newSub = document.createElement('span');
+                          newSub.className = 'bg-zinc-100 text-zinc-700 px-4 py-2 rounded-lg text-sm flex items-center gap-2 border border-zinc-200 animate-fade-in';
+                          newSub.innerHTML = `${input.value.trim()} <iconify-icon icon="solar:close-circle-linear" class="text-zinc-400"></iconify-icon>`;
+                          container.appendChild(newSub);
+                          input.value = '';
+                      }
+                      break;
+                  case 'open-add-task':
+                      openModal('modal-add-task');
+                      break;
+                  case 'open-paywall':
+                      openModal('modal-paywall');
+                      break;
+                  case 'open-modal':
+                      openModal(actionElem.dataset.target);
+                      break;
+                  case 'close-modal':
+                      closeModal(actionElem.dataset.target);
+                      break;
+                  case 'toggle-task':
+                      const checkbox = actionElem.querySelector('.task-checkbox');
+                      const text = actionElem.querySelector('.task-text');
+                      checkbox.classList.toggle('checked');
+                      text.classList.toggle('completed');
+                      if(checkbox.classList.contains('checked')){
+                          checkbox.classList.remove('border-zinc-300');
+                          actionElem.classList.add('opacity-70');
+                      } else {
+                          checkbox.classList.add('border-zinc-300');
+                          actionElem.classList.remove('opacity-70');
+                      }
+                      break;
+                  case 'nav-profile':
+                      switchScreen('screen-profile');
+                      break;
+                  case 'toggle-switch':
+                      const knob = actionElem.querySelector('div');
+                      if (actionElem.classList.contains('bg-zinc-900')) {
+                          actionElem.classList.remove('bg-zinc-900');
+                          actionElem.classList.add('bg-zinc-200');
+                          knob.classList.remove('right-1');
+                          knob.classList.add('left-1', 'shadow-sm');
+                      } else {
+                          actionElem.classList.remove('bg-zinc-200');
+                          actionElem.classList.add('bg-zinc-900');
+                          knob.classList.remove('left-1', 'shadow-sm');
+                          knob.classList.add('right-1');
+                      }
+                      break;
+                  case 'edit-lesson':
+                      openModal('modal-edit-lesson');
+                      break;
+                  case 'logout':
+                      mainApp.classList.add('hidden');
+                      onboardingFlow.classList.remove('hidden', '-translate-y-full');
+                      obStep2.classList.add('hidden');
+                      obStep1.classList.remove('hidden');
+                      break;
+              }
+          });
+      });
+    </script>
+  
+</body></html>
