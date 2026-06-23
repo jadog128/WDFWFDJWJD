@@ -356,7 +356,6 @@ export type DailyPlanCreateOrConnectWithoutUserInput = {
 
 export type DailyPlanCreateManyUserInputEnvelope = {
   data: Prisma.DailyPlanCreateManyUserInput | Prisma.DailyPlanCreateManyUserInput[]
-  skipDuplicates?: boolean
 }
 
 export type DailyPlanUpsertWithWhereUniqueWithoutUserInput = {
@@ -1125,7 +1124,6 @@ export type DailyPlanCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * The data used to create many DailyPlans.
    */
   data: Prisma.DailyPlanCreateManyInput | Prisma.DailyPlanCreateManyInput[]
-  skipDuplicates?: boolean
 }
 
 /**
@@ -1144,7 +1142,6 @@ export type DailyPlanCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exten
    * The data used to create many DailyPlans.
    */
   data: Prisma.DailyPlanCreateManyInput | Prisma.DailyPlanCreateManyInput[]
-  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */

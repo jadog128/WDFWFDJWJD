@@ -407,7 +407,6 @@ export type SubjectCreateOrConnectWithoutUserInput = {
 
 export type SubjectCreateManyUserInputEnvelope = {
   data: Prisma.SubjectCreateManyUserInput | Prisma.SubjectCreateManyUserInput[]
-  skipDuplicates?: boolean
 }
 
 export type SubjectUpsertWithWhereUniqueWithoutUserInput = {
@@ -1324,7 +1323,6 @@ export type SubjectCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * The data used to create many Subjects.
    */
   data: Prisma.SubjectCreateManyInput | Prisma.SubjectCreateManyInput[]
-  skipDuplicates?: boolean
 }
 
 /**
@@ -1343,7 +1341,6 @@ export type SubjectCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensi
    * The data used to create many Subjects.
    */
   data: Prisma.SubjectCreateManyInput | Prisma.SubjectCreateManyInput[]
-  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */
