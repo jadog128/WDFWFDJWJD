@@ -25,6 +25,7 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
   const [focusPoint, setFocusPoint] = useState<{ x: number; y: number } | null>(null);
   const [rawText, setRawText] = useState("");
   const [manualText, setManualText] = useState("");
+  const processingRef = useRef(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -110,7 +111,8 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
   }, []);
 
   const processOCR = async (dataUrl: string) => {
-    setStep("preview");
+    if (processingRef.current) return;
+    processingRef.current = true;
     setLoading(true);
     setError("");
 
@@ -145,6 +147,7 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
       setError(err instanceof Error ? err.message : "Vision AI failed");
     } finally {
       setLoading(false);
+      processingRef.current = false;
     }
   };
 
@@ -311,7 +314,7 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
                 </button>
                 <button
                   onClick={() => processOCR(image)}
-                  disabled={loading}
+                  disabled={loading || processingRef.current}
                   className="bg-white text-zinc-900 px-10 py-3 rounded-full text-sm font-medium disabled:opacity-50 shadow-lg"
                 >
                   {loading ? "Processing..." : "Scan This Photo"}
