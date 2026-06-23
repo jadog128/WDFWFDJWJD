@@ -21,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="h-full font-sans bg-slate-200 flex items-center justify-center">
+        <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js" defer></script>
         <div
           id="app-container"
           className="w-full max-w-[400px] h-dvh max-h-[850px] bg-slate-50 relative overflow-hidden shadow-2xl flex flex-col"
