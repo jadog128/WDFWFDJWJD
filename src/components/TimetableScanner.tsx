@@ -83,13 +83,17 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
     setStep("preview");
     setLoading(true);
     setError("");
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+
     try {
       const blob = await (await fetch(dataUrl)).blob();
       const fd = new FormData();
       fd.append("image", blob, "scan.jpg");
       fd.append("lang", "eng");
 
-      const res = await fetch("/api/ocr", { method: "POST", body: fd });
+      const res = await fetch("/api/ocr", { method: "POST", body: fd, signal: controller.signal });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "OCR failed" }));
         throw new Error(err.error || "OCR failed");
@@ -100,8 +104,13 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
       setDetectedLessons(parsed);
       setStep(parsed.length > 0 ? "review" : "preview");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "OCR failed");
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError("OCR timed out. Try uploading a smaller image or checking lighting.");
+      } else {
+        setError(err instanceof Error ? err.message : "OCR failed");
+      }
     } finally {
+      clearTimeout(timeout);
       setLoading(false);
     }
   };
@@ -260,6 +269,9 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
           <div className="w-10 h-10 border-2 border-white/30 border-t-white rounded-full animate-spin mb-4" />
           <p className="text-sm text-zinc-300">Reading timetable...</p>
           <p className="text-xs text-zinc-500 mt-2">Extracting text from image</p>
+          <button onClick={() => { setLoading(false); setStep("camera"); setImage(null); }} className="mt-8 text-sm text-zinc-500 underline">
+            Cancel
+          </button>
         </div>
       )}
 
