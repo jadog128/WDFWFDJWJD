@@ -6,18 +6,17 @@ export async function GET() {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  const plan = await prisma.dailyPlan.findFirst({
-    where: {
-      userId,
-      date: { gte: today, lt: tomorrow },
-    },
-  });
-
-  return NextResponse.json(plan);
+    const plan = await prisma.dailyPlan.findFirst({
+      where: { userId, date: { gte: today, lt: tomorrow } },
+    });
+    return NextResponse.json(plan);
+  } catch {
+    return NextResponse.json(null);
+  }
 }
