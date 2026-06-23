@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useCreateLesson } from "@/lib/hooks/useLessons";
 import { useSubjects } from "@/lib/hooks/useSubjects";
 import { parseTimetableText, type ParsedLesson } from "@/lib/parseTimetable";
@@ -21,9 +21,31 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
   const [rawText, setRawText] = useState("");
   const [manualText, setManualText] = useState("");
 
-  const inputRef = useRef<HTMLInputElement>(null);
   const createLesson = useCreateLesson();
   const { data: subjects } = useSubjects();
+
+  const openCamera = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.capture = "environment" as any;
+    input.onchange = ((e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) handleFile(file);
+    }) as any;
+    input.click();
+  };
+
+  const openGallery = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = ((e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) handleFile(file);
+    }) as any;
+    input.click();
+  };
 
   const handleFile = (file: File) => {
     const reader = new FileReader();
@@ -279,7 +301,7 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
         <p className="text-sm text-zinc-400 text-center mb-8">Take a photo of your timetable and AI will extract all classes automatically</p>
 
         <button
-          onClick={() => inputRef.current?.click()}
+          onClick={openCamera}
           className="w-full bg-white text-zinc-900 py-5 rounded-2xl text-base font-medium shadow-lg active:scale-95 transition flex items-center justify-center gap-3"
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -288,31 +310,9 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
           Take Photo
         </button>
 
-        <button
-          onClick={() => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = "image/*";
-            input.onchange = (e: any) => {
-              if (e.target.files?.[0]) handleFile(e.target.files[0]);
-            };
-            input.click();
-          }}
-          className="mt-3 text-sm text-zinc-400 py-2"
-        >
+        <button onClick={openGallery} className="mt-3 text-sm text-zinc-400 py-2">
           Or choose from gallery
         </button>
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(e) => {
-            if (e.target.files?.[0]) handleFile(e.target.files[0]);
-          }}
-        />
       </div>
 
       <div className="px-6 pb-8">
