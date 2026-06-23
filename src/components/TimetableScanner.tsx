@@ -114,18 +114,34 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
     setError("");
 
     try {
-      const { recognizeImage } = await import("@/lib/clientOcr");
-      const text = await recognizeImage(dataUrl);
-      const parsed = parseTimetableText(text);
-      setDetectedLessons(parsed);
-      if (parsed.length > 0) {
+      const { extractTimetableWithVision } = await import("@/lib/visionOcr");
+      const jsonStr = await extractTimetableWithVision(dataUrl);
+      let lessons: ParsedLesson[] = [];
+      try {
+        const raw = JSON.parse(jsonStr);
+        lessons = (Array.isArray(raw) ? raw : []).map((l: any) => ({
+          dayOfWeek: l.dayOfWeek ?? 1,
+          startTime: l.startTime || "09:00",
+          endTime: l.endTime || "10:00",
+          subject: l.subject || "Unknown",
+          location: l.location || "",
+          teacher: l.teacher || "",
+          raw: "",
+        }));
+      } catch {
+        setRawText(jsonStr);
+        setStep("review_text");
+        return;
+      }
+      setDetectedLessons(lessons);
+      if (lessons.length > 0) {
         setStep("review");
       } else {
-        setRawText(text);
+        setRawText(jsonStr);
         setStep("review_text");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "OCR failed");
+      setError(err instanceof Error ? err.message : "Vision AI failed");
     } finally {
       setLoading(false);
     }
@@ -309,8 +325,8 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
       {loading && (
         <div className="flex-1 flex flex-col items-center justify-center bg-zinc-900 text-white">
           <div className="w-10 h-10 border-2 border-white/30 border-t-white rounded-full animate-spin mb-4" />
-          <p className="text-sm text-zinc-300">Reading timetable...</p>
-          <p className="text-xs text-zinc-500 mt-2">First scan loads OCR engine — may take a moment</p>
+          <p className="text-sm text-zinc-300">AI is reading your timetable...</p>
+          <p className="text-xs text-zinc-500 mt-2">Using vision AI to extract lessons</p>
           <button onClick={() => { setLoading(false); setStep("camera"); setImage(null); }} className="mt-8 text-sm text-zinc-500 underline">
             Cancel
           </button>
