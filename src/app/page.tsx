@@ -8,12 +8,13 @@ import AppShell from "@/components/AppShell";
 export default function Home() {
   const { isSignedIn, isLoaded: authLoaded } = useAuth();
   const { user } = useUser();
-  const { data: subjects, isLoading: subjectsLoading } = useSubjects();
+  const { data: subjects, isLoading: subjectsLoading, isError } = useSubjects();
   const createSubject = useCreateSubject();
 
   const [onboardingDone, setOnboardingDone] = useState(false);
   const [obStep, setObStep] = useState(1);
   const [newSubjectName, setNewSubjectName] = useState("");
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
     if (subjects && subjects.length > 0) {
@@ -72,10 +73,44 @@ export default function Home() {
     );
   }
 
-  if (subjectsLoading) {
+  const showAppOrOnboarding = () => {
+    if (started) return true;
+    if (!subjectsLoading && !isError) return true;
+    if (subjects && subjects.length >= 0) return true;
+    return false;
+  };
+
+  if (subjectsLoading && !subjects && !isError) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin" />
+      <div className="flex-1 flex flex-col items-center justify-center p-6">
+        <div className="w-8 h-8 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin mb-4" />
+        <p className="text-sm text-zinc-400">Connecting...</p>
+      </div>
+    );
+  }
+
+  if (isError && !subjects && !onboardingDone) {
+    return (
+      <div className="flex-1 flex flex-col p-6">
+        <div className="mt-20 mb-8">
+          <div className="w-16 h-16 bg-zinc-900 text-white rounded-2xl flex items-center justify-center mb-8">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-medium tracking-tight leading-tight mb-4">
+            Welcome to Day Simplified
+          </h1>
+          <p className="text-sm text-zinc-500 mb-4">
+            Setting up your account... Please run the database migration in your Supabase dashboard.
+          </p>
+          <button
+            onClick={() => setOnboardingDone(true)}
+            className="w-full bg-zinc-900 text-white rounded-full py-4 text-sm font-medium transition active:scale-95"
+          >
+            Continue anyway
+          </button>
+        </div>
       </div>
     );
   }
@@ -164,7 +199,7 @@ export default function Home() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {subjects.map((s, i) => {
+                {subjects.map((s) => {
                   const colors: Record<string, string> = {
                     "#3b82f6": "bg-blue-50 text-blue-700 border-blue-100",
                     "#8b5cf6": "bg-purple-50 text-purple-700 border-purple-100",
