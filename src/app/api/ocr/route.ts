@@ -13,7 +13,11 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const lang = formData.get("lang")?.toString() || "eng";
 
-  const worker = await createWorker(lang, 1, { logger: () => {} });
+  const worker = await createWorker(lang, 1, {
+    logger: () => {},
+    langPath: "./public/tessdata",
+    cachePath: "/tmp/tesseract-cache",
+  });
   const { data } = await worker.recognize(buffer);
   await worker.terminate();
 

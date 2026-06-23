@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useCreateLesson } from "@/lib/hooks/useLessons";
 import { useSubjects } from "@/lib/hooks/useSubjects";
 import { parseTimetableText, type ParsedLesson } from "@/lib/parseTimetable";
@@ -85,7 +85,7 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
     setError("");
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20000);
+    const timeout = setTimeout(() => controller.abort(), 30000);
 
     try {
       const blob = await (await fetch(dataUrl)).blob();
@@ -105,7 +105,7 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
       setStep(parsed.length > 0 ? "review" : "preview");
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
-        setError("OCR timed out. Try uploading a smaller image or checking lighting.");
+        setError("First scan takes longer (loading OCR engine). Please try again.");
       } else {
         setError(err instanceof Error ? err.message : "OCR failed");
       }

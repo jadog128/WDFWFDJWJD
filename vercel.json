@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/ocr/route.ts": {
+      "maxDuration": 30
+    },
+    "api/plan/generate/route.ts": {
+      "maxDuration": 30
+    }
+  }
+}
