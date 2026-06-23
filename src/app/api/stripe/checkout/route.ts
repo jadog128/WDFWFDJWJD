@@ -2,15 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+let stripe: Stripe | null = null;
+function getStripe() {
+  if (!stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) return null;
+    stripe = new Stripe(key);
+  }
+  return stripe;
+}
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const s = getStripe();
+  if (!s) {
+    return NextResponse.json({ error: "Payments not configured" }, { status: 501 });
+  }
+
   const { priceId } = await req.json();
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await s.checkout.sessions.create({
     mode: "subscription",
     payment_method_types: ["card"],
     line_items: [
@@ -25,8 +38,8 @@ export async function POST(req: NextRequest) {
       },
     ],
     metadata: { userId },
-    success_url: `${req.nextUrl.origin}/plan?success=true`,
-    cancel_url: `${req.nextUrl.origin}/pricing?canceled=true`,
+    success_url: `${req.nextUrl.origin}?payment=success`,
+    cancel_url: `${req.nextUrl.origin}?payment=canceled`,
   });
 
   return NextResponse.json({ url: session.url });
