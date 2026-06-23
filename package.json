@@ -7,7 +7,7 @@
     "build": "node scripts/download-tessdata.js && next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "node scripts/download-tessdata.js"
+    "postinstall": "node scripts/download-tessdata.js || echo 'Tessdata download skipped'"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.7",

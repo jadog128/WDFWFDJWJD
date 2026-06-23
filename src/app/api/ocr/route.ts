@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createWorker } from "tesseract.js";
+import fs from "fs";
 
 export const maxDuration = 30;
 
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
 
   const worker = await createWorker(lang, 1, {
     logger: () => {},
-    langPath: "./public/tessdata",
+    langPath: fs.existsSync("./public/tessdata/eng.traineddata") ? "./public/tessdata" : undefined,
     cachePath: "/tmp/tesseract-cache",
   });
   const { data } = await worker.recognize(buffer);
