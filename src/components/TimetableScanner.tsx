@@ -250,7 +250,7 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
         <div className="flex-1 flex flex-col items-center justify-center bg-zinc-900 text-white">
           <div className="w-10 h-10 border-2 border-white/30 border-t-white rounded-full animate-spin mb-4" />
           <p className="text-sm text-zinc-300">Reading timetable...</p>
-          <p className="text-xs text-zinc-500 mt-2">Extracting text from image</p>
+          <p className="text-xs text-zinc-500 mt-2">First scan loads OCR engine — may take a moment</p>
           <button onClick={() => { setLoading(false); setStep("camera"); setImage(null); }} className="mt-8 text-sm text-zinc-500 underline">
             Cancel
           </button>
