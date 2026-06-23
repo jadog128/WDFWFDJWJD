@@ -86,14 +86,15 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
       setError("Camera not ready. Tap the camera view first.");
       return;
     }
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    const maxW = 1200;
+    const scale = Math.min(1, maxW / video.videoWidth);
+    canvas.width = video.videoWidth * scale;
+    canvas.height = video.videoHeight * scale;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    ctx.drawImage(video, 0, 0);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-    setImage(dataUrl);
-    processOCR(dataUrl);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    setImage(canvas.toDataURL("image/jpeg", 0.7));
+    setStep("preview");
   }, []);
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
