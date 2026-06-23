@@ -92,7 +92,7 @@ export default function Home() {
         <h2 className="text-xl font-medium tracking-tight mb-2">Database Connection Error</h2>
         <p className="text-sm text-zinc-500 text-center mb-2 max-w-xs">{errMsg}</p>
         <p className="text-xs text-zinc-400 text-center mb-6 max-w-xs">
-          Make sure your Supabase IPv4 addon is enabled, or update DATABASE_URL to use the pooler.
+          If this persists, check that your database is running and accessible.
         </p>
         <button
           onClick={() => window.location.reload()}
