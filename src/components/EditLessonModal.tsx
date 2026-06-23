@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useUpdateLesson, useCreateLesson } from "@/lib/hooks/useLessons";
 import { useSubjects } from "@/lib/hooks/useSubjects";
 import type { Lesson } from "@/lib/hooks/useLessons";
+import TimetableScanner from "./TimetableScanner";
 
 interface EditLessonModalProps {
   open: boolean;
@@ -16,6 +17,7 @@ export default function EditLessonModal({ open, lesson, onClose }: EditLessonMod
   const [endTime, setEndTime] = useState("10:30");
   const [dayOfWeek, setDayOfWeek] = useState(0);
   const [location, setLocation] = useState("");
+  const [showScanner, setShowScanner] = useState(false);
   const updateLesson = useUpdateLesson();
   const createLesson = useCreateLesson();
   const { data: subjects } = useSubjects();
@@ -64,6 +66,10 @@ export default function EditLessonModal({ open, lesson, onClose }: EditLessonMod
   };
 
   const isPending = updateLesson.isPending || createLesson.isPending;
+
+  if (showScanner) {
+    return <TimetableScanner onClose={() => setShowScanner(false)} />;
+  }
 
   if (!open) return null;
 
@@ -137,6 +143,17 @@ export default function EditLessonModal({ open, lesson, onClose }: EditLessonMod
             />
           </div>
         </div>
+
+        <button
+          onClick={() => setShowScanner(true)}
+          className="w-full bg-zinc-100 text-zinc-700 py-3 rounded-xl text-sm font-medium mb-3 flex items-center justify-center gap-2 transition active:bg-zinc-200"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Scan Timetable with Camera
+        </button>
 
         <button
           onClick={handleSubmit}
