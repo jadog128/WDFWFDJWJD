@@ -11,7 +11,7 @@ interface TimetableScannerProps {
   onClose: () => void;
 }
 
-type Step = "camera" | "preview" | "review" | "saving";
+type Step = "camera" | "preview" | "review" | "review_text" | "saving";
 
 export default function TimetableScanner({ onClose }: TimetableScannerProps) {
   const [step, setStep] = useState<Step>("camera");
@@ -23,6 +23,8 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
   const [error, setError] = useState("");
   const [saveDone, setSaveDone] = useState(false);
   const [focusPoint, setFocusPoint] = useState<{ x: number; y: number } | null>(null);
+  const [rawText, setRawText] = useState("");
+  const [manualText, setManualText] = useState("");
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -116,7 +118,12 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
       const text = await recognizeImage(dataUrl);
       const parsed = parseTimetableText(text);
       setDetectedLessons(parsed);
-      setStep(parsed.length > 0 ? "review" : "preview");
+      if (parsed.length > 0) {
+        setStep("review");
+      } else {
+        setRawText(text);
+        setStep("review_text");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "OCR failed");
     } finally {
@@ -317,6 +324,57 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
             <p className="text-sm text-red-200">{error}</p>
             <button onClick={resetAll} className="mt-2 text-sm text-red-300 underline">
               Try again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* OCR text review (no lessons detected) */}
+      {step === "review_text" && !loading && (
+        <div className="flex-1 bg-zinc-50 flex flex-col">
+          <div className="px-5 pt-5 pb-3 bg-white border-b border-zinc-100">
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-lg font-medium tracking-tight">No Lessons Detected</h2>
+              <button onClick={onClose} className="text-zinc-400">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-xs text-zinc-400">
+              The OCR didn't find clear timetable data. Edit the text below and try again.
+            </p>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-5 py-4 no-scrollbar">
+            <textarea
+              value={manualText || rawText}
+              onChange={(e) => setManualText(e.target.value)}
+              className="w-full h-64 bg-white border border-zinc-200 rounded-2xl p-4 text-sm text-zinc-700 font-mono resize-none focus:outline-none focus:border-zinc-400"
+              placeholder="Paste or type your timetable here..."
+            />
+            <div className="mt-4 bg-yellow-50 border border-yellow-100 rounded-xl p-3">
+              <p className="text-xs text-yellow-700">
+                <strong>Format example:</strong>{" "}
+                Monday{"\n"}09:00 - 10:30 Mathematics Room 302{"\n"}10:30 - 12:00 Physics Lab A
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white border-t border-zinc-100 px-5 py-4 flex gap-3">
+            <button onClick={resetAll} className="flex-1 bg-zinc-100 text-zinc-700 py-3 rounded-xl text-sm font-medium">
+              Retake Photo
+            </button>
+            <button
+              onClick={() => {
+                const parsed = parseTimetableText(manualText || rawText);
+                setDetectedLessons(parsed);
+                if (parsed.length > 0) setStep("review");
+                else setError("Still couldn't detect lessons. Check the format.");
+              }}
+              className="flex-1 bg-zinc-900 text-white py-3 rounded-xl text-sm font-medium"
+            >
+              Parse Text
             </button>
           </div>
         </div>
