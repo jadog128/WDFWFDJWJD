@@ -28,60 +28,50 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
 
   const pickImage = () => fileRef.current?.click();
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     setStep("loading");
     setError("");
 
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(url);
+    try {
+      const bitmap = await createImageBitmap(file);
       const maxW = 1200;
-      const scale = Math.min(1, maxW / img.width);
-      const w = Math.round(img.width * scale);
-      const h = Math.round(img.height * scale);
+      const scale = Math.min(1, maxW / bitmap.width);
+      const w = Math.round(bitmap.width * scale);
+      const h = Math.round(bitmap.height * scale);
       const c = document.createElement("canvas");
       c.width = w;
       c.height = h;
       const ctx = c.getContext("2d");
-      if (!ctx) { setError("Canvas error"); setStep("pick"); return; }
-      ctx.drawImage(img, 0, 0, w, h);
+      if (!ctx) throw new Error("Canvas error");
+      ctx.drawImage(bitmap, 0, 0, w, h);
+      bitmap.close();
       const compressed = c.toDataURL("image/jpeg", 0.7);
 
-      extractTimetableWithVision(compressed)
-        .then((jsonStr) => {
-          let lessons: ParsedLesson[] = [];
-          try {
-            const raw = JSON.parse(jsonStr);
-            lessons = (Array.isArray(raw) ? raw : []).map((l: any) => ({
-              dayOfWeek: l.dayOfWeek ?? 1,
-              startTime: l.startTime || "09:00",
-              endTime: l.endTime || "10:00",
-              subject: l.subject || "Unknown",
-              location: l.location || "",
-              teacher: l.teacher || "",
-              raw: "",
-            }));
-          } catch {
-            setRawText(jsonStr);
-            setStep("review_text");
-            return;
-          }
-          setDetectedLessons(lessons);
-          setStep(lessons.length > 0 ? "review" : "review_text");
-          if (lessons.length === 0) setRawText(jsonStr);
-        })
-        .catch((err: Error) => {
-          setError(err.message || "Vision AI failed");
-          setStep("pick");
-        });
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      setError("Failed to load image");
+      const jsonStr = await extractTimetableWithVision(compressed);
+      let lessons: ParsedLesson[] = [];
+      try {
+        const raw = JSON.parse(jsonStr);
+        lessons = (Array.isArray(raw) ? raw : []).map((l: any) => ({
+          dayOfWeek: l.dayOfWeek ?? 1,
+          startTime: l.startTime || "09:00",
+          endTime: l.endTime || "10:00",
+          subject: l.subject || "Unknown",
+          location: l.location || "",
+          teacher: l.teacher || "",
+          raw: "",
+        }));
+      } catch {
+        setRawText(jsonStr);
+        setStep("review_text");
+        return;
+      }
+      setDetectedLessons(lessons);
+      setStep(lessons.length > 0 ? "review" : "review_text");
+      if (lessons.length === 0) setRawText(jsonStr);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Image processing failed");
       setStep("pick");
-    };
-    img.src = url;
+    }
   };
 
   const startEdit = (i: number) => {
