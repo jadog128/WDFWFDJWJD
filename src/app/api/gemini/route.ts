@@ -3,13 +3,13 @@ import { auth } from "@clerk/nextjs/server";
 
 export const maxDuration = 30;
 
-async function callGemini(token: string, base64: string, mimeType: string, retries = 2): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${token}`;
+async function callGemini(token: string, projectId: string, base64: string, mimeType: string, retries = 2): Promise<string> {
+  const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/gemini-1.5-flash:generateContent`;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           contents: [
             {
@@ -68,9 +68,10 @@ export async function POST(req: NextRequest) {
     const mimeType = image.match(/^data:(image\/\w+);/)?.[1] || "image/jpeg";
 
     const token = process.env.GOOGLE_AI_TOKEN;
-    if (!token) return NextResponse.json({ error: "Google AI not configured" }, { status: 501 });
+    const projectId = process.env.GOOGLE_PROJECT_ID;
+    if (!token || !projectId) return NextResponse.json({ error: "Google AI not configured" }, { status: 501 });
 
-    const text = await callGemini(token, base64, mimeType);
+    const text = await callGemini(token, projectId, base64, mimeType);
     return NextResponse.json({ result: text });
   } catch (err) {
     return NextResponse.json(
