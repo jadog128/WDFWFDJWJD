@@ -127,7 +127,7 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
   if (step === "loading") {
     return (
       <div className="absolute inset-0 bg-black z-50 flex flex-col items-center justify-center text-white">
-        {image && <img src={image} className="absolute inset-0 w-full h-full object-contain opacity-20" alt="" />}
+        {image && <img src={image} className="absolute inset-0 w-full h-full object-contain opacity-60" alt="" />}
         <div className="relative">
           <div className="w-10 h-10 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4" />
           <p className="text-sm text-zinc-200">Extracting timetable with AI...</p>
