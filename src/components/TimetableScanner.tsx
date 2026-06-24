@@ -32,10 +32,23 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
     setStep("loading");
     setError("");
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      extractTimetableWithVision(dataUrl)
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const maxW = 1200;
+      const scale = Math.min(1, maxW / img.width);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const c = document.createElement("canvas");
+      c.width = w;
+      c.height = h;
+      const ctx = c.getContext("2d");
+      if (!ctx) { setError("Canvas error"); setStep("pick"); return; }
+      ctx.drawImage(img, 0, 0, w, h);
+      const compressed = c.toDataURL("image/jpeg", 0.7);
+
+      extractTimetableWithVision(compressed)
         .then((jsonStr) => {
           let lessons: ParsedLesson[] = [];
           try {
@@ -63,11 +76,12 @@ export default function TimetableScanner({ onClose }: TimetableScannerProps) {
           setStep("pick");
         });
     };
-    reader.onerror = () => {
-      setError("Failed to read image file");
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      setError("Failed to load image");
       setStep("pick");
     };
-    reader.readAsDataURL(file);
+    img.src = url;
   };
 
   const startEdit = (i: number) => {
